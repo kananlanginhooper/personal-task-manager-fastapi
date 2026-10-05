@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuses the push if any tracked file contains a term from the private denylist.
+# Enable once per clone:  git config core.hooksPath .githooks
+exec python tools/privacy_scan.py
