@@ -1,0 +1,16 @@
+# Example systemd unit. Copy to /etc/systemd/system/, adjust paths and user, then:
+#   sudo systemctl daemon-reload && sudo systemctl enable --now personal-task-manager-api
+[Unit]
+Description=Personal Task Manager API
+After=network-online.target mysql.service
+
+[Service]
+User=YOUR_USER
+WorkingDirectory=/opt/personal-task-manager/api
+Environment=ENV_FILE=/home/YOUR_USER/.config/personal-task-manager/api.env
+ExecStart=/opt/personal-task-manager/api/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8095
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
