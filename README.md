@@ -13,11 +13,24 @@ The front end lives in [personal-task-manager-angular](https://github.com/kananl
 ## Run it
 
 ```bash
+git clone https://github.com/kananlanginhooper/personal-task-manager-angular ../personal-task-manager-angular
 cp .env.example .env        # set DB_HOST, DB_USER, DB_PASSWORD (MySQL 8)
 docker compose up -d --build
 ```
 
-The compose file has no database service: the API connects to an existing MySQL server at `DB_HOST`. Without Docker:
+The image builds the Angular UI from the sibling clone and serves it with the API, so `http://localhost:8095/` is the whole app. The compose file has no database service: the API connects to an existing MySQL server at `DB_HOST`.
+
+Nothing about hosts, ports or paths is compiled in. `GET /api/config` gives the UI its runtime settings, and these `.env` values move the app from `http://<host>:<port>` to `https://<app>.<domain>`:
+
+| Variable | What it does |
+|---|---|
+| `PUBLIC_URL` | The app's public address |
+| `UI_BASE_PATH` | Path prefix to serve under (`/` by default); set as `<base href>` at request time |
+| `FRAME_ANCESTORS` | Origins allowed to show the app in an iframe (sent as CSP `frame-ancestors 'self' ...`) |
+| `FORWARDED_ALLOW_IPS` | Reverse proxies whose `X-Forwarded-*` headers are trusted |
+| `LOGIN`, `OIDC_ISSUER`, `OIDC_CLIENT_ID` | OpenID Connect login switch (not built yet) |
+
+Without Docker (API only):
 
 ```bash
 python -m venv .venv
