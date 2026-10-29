@@ -17,3 +17,10 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+# The shared network every home-project container joins. Create it once per machine with
+# `docker network create --subnet <shared subnet> homelab` (the subnet is in the home dev standard).
+networks:
+  default:
+    name: homelab
+    external: true
