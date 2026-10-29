@@ -1,15 +1,19 @@
 # Same file on the laptop and on the server. All settings come from .env (see .env.example).
 # No database service here: the API connects to the shared MySQL server at DB_HOST.
+# The image also serves the UI, built from the sibling clone ../personal-task-manager-angular.
 services:
   api:
-    build: .
+    build:
+      context: .
+      additional_contexts:
+        ui-src: ../personal-task-manager-angular
     image: personal-task-manager-api
     env_file: .env
     ports:
       - "${API_PORT:-8095}:8095"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8095/openapi.json', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8095/api/health', timeout=3)"]
       interval: 30s
       timeout: 5s
       retries: 3

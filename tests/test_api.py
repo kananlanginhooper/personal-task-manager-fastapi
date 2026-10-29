@@ -22,6 +22,13 @@ def test_health(client):
     assert client.get("/api/health").json() == {"status": "ok"}
 
 
+def test_runtime_config_and_frame_policy(client):
+    r = client.get("/api/config")
+    assert r.json()["apiBase"] == "/api/" and r.json()["login"]["enabled"] is False
+    assert r.headers["content-security-policy"].startswith("frame-ancestors 'self'")
+    assert client.get("/api/no-such-route").status_code == 404
+
+
 def test_task_lifecycle_logs_every_change(client):
     t = client.post("/api/tasks", json={"title": "Water the plants", "date": "2030-01-07", "start": "18:00", "est": 15}).json()
     assert t["origEst"] == 15
