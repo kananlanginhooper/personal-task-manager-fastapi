@@ -21,7 +21,8 @@ COPY app ./app
 COPY scripts ./scripts
 COPY --from=ui /ui/dist/personal-task-manager/browser ./ui
 
-RUN useradd --system --uid 10001 app
+# readable by the app user whatever the modes were in the clone it was built from
+RUN chmod -R a+rX /app && useradd --system --uid 10001 app
 USER app
 
 EXPOSE 8095
