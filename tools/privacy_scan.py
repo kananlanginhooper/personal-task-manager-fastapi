@@ -7,6 +7,7 @@ Fails closed: no denylist means no push.
 
     python tools/privacy_scan.py          # scan, exit 1 on any hit
 """
+
 from __future__ import annotations
 
 import os
@@ -33,7 +34,9 @@ def pattern(term: str) -> re.Pattern[str]:
 
 
 def files() -> list[str]:
-    out = subprocess.run(["git", "ls-files", "--cached", "--others", "--exclude-standard"], capture_output=True, text=True, check=True).stdout
+    out = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"], capture_output=True, text=True, check=True
+    ).stdout
     return [f for f in out.splitlines() if f]
 
 
