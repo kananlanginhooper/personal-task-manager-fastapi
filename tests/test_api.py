@@ -55,6 +55,15 @@ def test_split_keeps_original_estimate(client):
     assert first["est"] + second["est"] == 60
     assert first["origEst"] == second["origEst"] == 60
     assert second["date"] == "2030-01-10" and second["splitFrom"] == t["id"]
+    assert (first["title"], second["title"]) == ("Sort the garage (part 1)", "Sort the garage (part 2)")
+
+
+def test_splitting_a_piece_again_gives_the_next_part_number(client):
+    t = client.post("/api/tasks", json={"title": "Paint the fence", "date": "2030-01-09", "est": 240}).json()
+    one, two = client.post(f"/api/tasks/{t['id']}/split", json={}).json()
+    titles = {p["title"] for p in client.post(f"/api/tasks/{one['id']}/split", json={}).json()}
+    titles |= {p["title"] for p in client.post(f"/api/tasks/{two['id']}/split", json={}).json()}
+    assert titles == {f"Paint the fence (part {n})" for n in (1, 2, 3, 4)}
 
 
 def test_habits_and_notes(client):

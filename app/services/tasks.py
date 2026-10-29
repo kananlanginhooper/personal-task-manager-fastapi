@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -98,20 +100,32 @@ def change_estimate(db: Session, task_id: str, body: EstimateIn) -> Task:
     return task
 
 
+PART = re.compile(r" \(part (\d+)\)$")
+
+
 def split_task(db: Session, task_id: str, reason: str | None) -> list[Task]:
-    """Halve a task: part 1 stays, part 2 goes to the next day. Both keep the original estimate."""
+    """Halve a task: it keeps its part number (or becomes part 1) and the new half, on the next day, takes the next
+    free part number, so splitting a piece again never makes two tasks with the same name. Both keep the original
+    estimate."""
     task = get_or_404(db, Task, task_id)
-    base = task.title.removesuffix(" (part 1)").removesuffix(" (part 2)")
+    base = PART.sub("", task.title)
+    taken = [
+        int(m.group(1))
+        for t in db.scalars(select(Task.title).where(Task.title.startswith(f"{base} (part ", autoescape=True)))
+        if (m := PART.search(t)) and PART.sub("", t) == base
+    ]
+    own = PART.search(task.title)
+    first, nxt = own.group(1) if own else "1", max(taken, default=1) + 1
     half = max(5, round(task.est / 2 / 5) * 5)
     second = Task(id=new_id())
     for key, value in task.to_api().items():
         if key not in {"id", "createdAt", "updatedAt"}:
             second.apply({key: value})
-    second.title, second.est, second.orig_est = f"{base} (part 2)", max(5, task.est - half), task.orig_est or task.est
+    second.title, second.est, second.orig_est = f"{base} (part {nxt})", max(5, task.est - half), task.orig_est or task.est
     second.done, second.start, second.moves, second.split_from = False, None, [], task.id
     second.date = add_days(task.date, 1)
     task.orig_est = task.orig_est or task.est
-    task.title, task.est = f"{base} (part 1)", half
+    task.title, task.est = f"{base} (part {first})", half
     db.add(second)
     log(
         db,
