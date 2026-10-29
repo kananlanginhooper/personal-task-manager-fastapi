@@ -1,0 +1,7 @@
+# Host networking, for a server where the database is on the same machine: the container reaches MySQL from the
+# host's LAN address (so a user limited to '<user>'@'<LAN>.%' matches) and listens on API_PORT directly.
+# Turn it on in that server's .env:  COMPOSE_FILE=docker-compose.yml:docker-compose.hostnet.yml
+services:
+  api:
+    network_mode: host
+    ports: !reset []
