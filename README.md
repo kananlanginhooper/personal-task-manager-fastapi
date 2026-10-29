@@ -13,16 +13,22 @@ The front end lives in [personal-task-manager-angular](https://github.com/kananl
 ## Run it
 
 ```bash
+cp .env.example .env        # set DB_HOST, DB_USER, DB_PASSWORD (MySQL 8)
+docker compose up -d --build
+```
+
+The compose file has no database service: the API connects to an existing MySQL server at `DB_HOST`. Without Docker:
+
+```bash
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-cp .env.example .env        # set DATABASE_URL (MySQL 8 or SQLite)
 .venv/bin/uvicorn app.main:app --port 8095
 ```
 
-Tables are created on first start. Load your own content from a JSON file kept outside the repo:
+With no `DB_HOST` or `DATABASE_URL` set, it falls back to a local SQLite file. Tables are created on first start. Load your own content from a JSON file kept outside the repo:
 
 ```bash
-.venv/bin/python -m scripts.import_seed /path/to/private/seed.json
+docker compose run --rm -v /path/to/private:/private:ro api python -m scripts.import_seed /private/seed.json
 ```
 
 API docs are served at `/docs` once it's running.

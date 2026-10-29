@@ -1,0 +1,10 @@
+.git
+.githooks
+.env
+.venv
+**/__pycache__
+.pytest_cache
+*.db
+tests
+tools
+deploy
