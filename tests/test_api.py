@@ -77,8 +77,8 @@ def test_award_is_idempotent(client):
 
 
 def test_token_required_when_configured(client, monkeypatch):
-    from app import config
+    from app.core.config import settings
 
-    monkeypatch.setattr(config, "API_TOKEN", "secret")
+    monkeypatch.setattr(settings, "api_token", "secret")
     assert client.get("/api/health").status_code == 401
     assert client.get("/api/health", headers={"Authorization": "Bearer secret"}).status_code == 200
