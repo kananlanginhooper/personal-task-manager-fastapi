@@ -11,7 +11,7 @@ RUN npx ng build
 
 FROM python:3.12-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UI_DIR=/app/ui FORWARDED_ALLOW_IPS=127.0.0.1
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 UI_DIR=/app/ui FORWARDED_ALLOW_IPS=127.0.0.1 API_PORT=8095
 WORKDIR /app
 
 COPY requirements.txt .
@@ -27,4 +27,4 @@ USER app
 
 EXPOSE 8095
 # --proxy-headers: behind a reverse proxy (TLS ending there), X-Forwarded-Proto/For from FORWARDED_ALLOW_IPS are honored
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port 8095 --proxy-headers --forwarded-allow-ips \"$FORWARDED_ALLOW_IPS\""]
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port \"$API_PORT\" --proxy-headers --forwarded-allow-ips \"$FORWARDED_ALLOW_IPS\""]
