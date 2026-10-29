@@ -1,7 +1,6 @@
 # Same file on the laptop and on the server. All settings come from .env (see .env.example).
 # No database service here: the API connects to the shared MySQL server at DB_HOST.
 # The image also serves the UI, built from the sibling clone ../personal-task-manager-angular.
-# On a server whose MySQL user is limited to LAN addresses, add docker-compose.hostnet.yml (COMPOSE_FILE in .env).
 services:
   api:
     build:
