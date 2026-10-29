@@ -44,13 +44,36 @@ With no `DB_HOST` or `DATABASE_URL` set, it falls back to a local SQLite file. T
 docker compose run --rm -v /path/to/private:/private:ro api python -m scripts.import_seed /private/seed.json
 ```
 
-API docs are served at `/docs` once it's running.
+API docs are served at `/docs` once it's running. Every route declares its response model, so `/openapi.json` is complete; the Angular app generates its TypeScript types from it.
+
+## Code layout
+
+```
+app/
+  main.py              create_app(): routers, middleware (frame-ancestors, base path, token), the built UI
+  core/config.py       Settings (pydantic-settings): the only place env and .env are read
+  api/routes/*.py      thin routers: validate, call a service, return a schema
+  schemas/*.py         Pydantic request/response models (camelCase on the wire)
+  services/*.py        the logic; no HTTP objects
+  db/                  SQLAlchemy engine, session and tables
+migrations/            Alembic
+```
+
+## Database migrations
+
+Tables are created on first start if they're missing. Schema changes go through Alembic:
+
+```bash
+alembic upgrade head                                  # once per database; the baseline only records the revision on an existing one
+alembic revision --autogenerate -m "what changed"     # after editing app/db/models.py
+```
 
 ## Tests
 
 ```bash
 .venv/bin/pip install -r requirements-dev.txt
 .venv/bin/python -m pytest
+ruff check . && ruff format --check .
 ```
 
 ## Privacy check before every push

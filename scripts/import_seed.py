@@ -8,6 +8,7 @@ Top-level keys (all optional): settings {key: value}, areas, habits, trophies, t
 shopping, recurring, notes, changes, awards (lists of objects with camelCase fields),
 habitDays {YYYY-MM-DD: {habitId: bool}}.
 """
+
 from __future__ import annotations
 
 import json
@@ -16,8 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from app.db import SessionLocal, create_all
-from app.models import (
+from app.db.models import (
     Area,
     Change,
     HabitDay,
@@ -31,6 +31,7 @@ from app.models import (
     TrophyAward,
     TrophyDef,
 )
+from app.db.session import SessionLocal, create_all
 
 LISTS = {
     "areas": Area,

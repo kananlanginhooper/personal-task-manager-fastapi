@@ -3,21 +3,22 @@
 Everything a person types (areas, habits, tasks, trophies, wording) lives in these tables,
 never in the code. JSON columns hold small nested lists (task steps, estimate history, moves).
 """
+
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
-from sqlalchemy import inspect as sa_inspect
 from sqlalchemy import JSON, Boolean, DateTime, Float, Integer, String, Text
+from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .db import Base
+from app.db.session import Base
 
 
 def now() -> datetime:
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 def _camel(name: str) -> str:
@@ -57,7 +58,7 @@ class Area(ApiMixin, Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     color: Mapped[str] = mapped_column(String(32), default="#1E6A50")
-    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
     sort: Mapped[int] = mapped_column(Integer, default=0)
 
 
@@ -66,10 +67,10 @@ class HabitDef(ApiMixin, Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     group_name: Mapped[str] = mapped_column(String(80))
     name: Mapped[str] = mapped_column(String(120))
-    sub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    cheer: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    sub: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cheer: Mapped[str | None] = mapped_column(String(255), nullable=True)
     big: Mapped[bool] = mapped_column(Boolean, default=False)
-    hype: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
+    hype: Mapped[str | None] = mapped_column(String(120), nullable=True)
     sort: Mapped[int] = mapped_column(Integer, default=0)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -87,18 +88,18 @@ class Task(ApiMixin, Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     title: Mapped[str] = mapped_column(String(255))
     date: Mapped[str] = mapped_column(String(10), index=True)
-    start: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
+    start: Mapped[str | None] = mapped_column(String(5), nullable=True)
     est: Mapped[int] = mapped_column(Integer, default=15)
-    orig_est: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    orig_est: Mapped[int | None] = mapped_column(Integer, nullable=True)
     travel: Mapped[int] = mapped_column(Integer, default=0)
-    close_by: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
-    leave: Mapped[Optional[str]] = mapped_column(String(5), nullable=True)
-    area: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    kind: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
-    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    cheer: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    hype: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
-    cost: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    close_by: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    leave: Mapped[str | None] = mapped_column(String(5), nullable=True)
+    area: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    kind: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    cheer: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    hype: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    cost: Mapped[int | None] = mapped_column(Integer, nullable=True)
     locked: Mapped[bool] = mapped_column(Boolean, default=False)
     recurring: Mapped[bool] = mapped_column(Boolean, default=False)
     remind: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -106,12 +107,12 @@ class Task(ApiMixin, Base):
     big: Mapped[bool] = mapped_column(Boolean, default=False)
     dread: Mapped[bool] = mapped_column(Boolean, default=False)
     done: Mapped[bool] = mapped_column(Boolean, default=False)
-    done_at: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
-    status: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
-    steps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
-    est_history: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
-    moves: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
-    split_from: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    done_at: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    steps: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    est_history: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    moves: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    split_from: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=now, onupdate=now)
 
@@ -119,13 +120,13 @@ class Task(ApiMixin, Base):
 class Project(ApiMixin, Base):
     __tablename__ = "projects"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    area: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    area: Mapped[str | None] = mapped_column(String(64), nullable=True)
     title: Mapped[str] = mapped_column(String(255))
     prio: Mapped[str] = mapped_column(String(16), default="steady")
-    est: Mapped[Optional[str]] = mapped_column(String(120), nullable=True)
-    due: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
-    next: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    source: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    est: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    due: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    next: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source: Mapped[str | None] = mapped_column(String(255), nullable=True)
     sort: Mapped[int] = mapped_column(Integer, default=0)
     steps: Mapped[list] = mapped_column(JSON, default=list)
 
@@ -136,18 +137,18 @@ class ShoppingItem(ApiMixin, Base):
     item: Mapped[str] = mapped_column(String(120))
     need: Mapped[bool] = mapped_column(Boolean, default=True)
     stocked: Mapped[bool] = mapped_column(Boolean, default=False)
-    note: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    note: Mapped[str | None] = mapped_column(String(255), nullable=True)
     added_at: Mapped[datetime] = mapped_column(DateTime, default=now)
-    got_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    got_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class RecurringRule(ApiMixin, Base):
     __tablename__ = "recurring_rules"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     title: Mapped[str] = mapped_column(String(120))
-    rule: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    freq: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
-    short: Mapped[Optional[str]] = mapped_column(String(16), nullable=True)
+    rule: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    freq: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    short: Mapped[str | None] = mapped_column(String(16), nullable=True)
     sort: Mapped[float] = mapped_column(Float, default=0)
 
 
@@ -158,13 +159,13 @@ class Change(ApiMixin, Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     at: Mapped[datetime] = mapped_column(DateTime, default=now, index=True)
     type: Mapped[str] = mapped_column(String(24))
-    task_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    project_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    from_: Mapped[Optional[dict]] = mapped_column("from", JSON, nullable=True)
-    to: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
-    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    extra: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    task_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    project_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    from_: Mapped[dict | None] = mapped_column("from", JSON, nullable=True)
+    to: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extra: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     def to_api(self) -> dict[str, Any]:
         out = super().to_api()
@@ -179,11 +180,11 @@ class Note(ApiMixin, Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     at: Mapped[datetime] = mapped_column(DateTime, default=now, index=True)
     text: Mapped[str] = mapped_column(Text)
-    task_id: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    task_title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    task_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    task_title: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[str] = mapped_column(String(16), default="new")
-    reply: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    replied_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    reply: Mapped[str | None] = mapped_column(Text, nullable=True)
+    replied_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class TrophyDef(ApiMixin, Base):
@@ -201,7 +202,7 @@ class TrophyDef(ApiMixin, Base):
 class TrophyAward(ApiMixin, Base):
     __tablename__ = "trophy_awards"
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    name: Mapped[Optional[str]] = mapped_column(String(80), nullable=True)
+    name: Mapped[str | None] = mapped_column(String(80), nullable=True)
     earned_at: Mapped[datetime] = mapped_column(DateTime, default=now)
 
 
