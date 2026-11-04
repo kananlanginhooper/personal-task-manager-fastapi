@@ -17,6 +17,9 @@ import sys
 from pathlib import Path
 
 DEFAULT = Path.home() / ".config" / "personal-task-manager" / "denylist.txt"
+# the author credit (AUTHOR-CREDIT-STANDARD.md): this exact full name, case and all, isn't a hit;
+# the first name on its own, or any other spelling, still is
+AUTHOR_CREDIT = re.compile(r"(?<![\w])Kanan Hooper(?![\w])")
 
 
 def load_terms() -> list[str]:
@@ -52,6 +55,7 @@ def main() -> int:
         except UnicodeDecodeError:
             continue
         for lineno, line in enumerate(text.splitlines(), 1):
+            line = AUTHOR_CREDIT.sub(lambda m: " " * len(m.group(0)), line)
             for term, pat in pats:
                 if pat.search(line):
                     hits += 1

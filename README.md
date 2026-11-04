@@ -107,3 +107,8 @@ Set `API_TOKEN` to require `Authorization: Bearer <token>` until a real sign-in 
 ## License
 
 GPL-3.0
+
+Copyright (c) 2026 Kanan Hooper
+
+---
+Built by [Kanan Hooper](https://github.com/kananlanginhooper)
